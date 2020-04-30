@@ -1,4 +1,4 @@
-module discord-notify
+module github.com/efskap/discord-notify
 
 go 1.14
 
