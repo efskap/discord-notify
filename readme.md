@@ -4,6 +4,8 @@
 
 Companion app for [Ripcord](https://cancel.fm/ripcord/) to supplant its notification system.
 
+Targets Linux, but should work on Windows (only tested in Wine).
+
 * Uses regular Discord notification settings.
 * Displays notifications (w/ avatar) through your OS.
 * But not when Ripcord is focused.
@@ -13,6 +15,8 @@ Companion app for [Ripcord](https://cancel.fm/ripcord/) to supplant its notifica
 
 However, its notifications support is rather lacklustre, displaying them only for DMs, without a sound, and in plain text. Heck, until recently it didn't even tell you the name of the sender. Unfortunately it's closed source shareware, so I can't go in and tweak it to my liking.
 
+
+
 ---
 
 ```sh
@@ -20,10 +24,9 @@ $ go install github.com/efskap/discord-notify
 $ discord-notify -h
 Usage of discord-notify:
   -sound string
-        Sound to play on notifications (default "none.mp3")
+        Sound to play on notifications (default "none")
   -t string
         Discord token
 ```
 
 I've included the sound I use in this repo (needs to be downloaded separately from `go install`), and although it is not native to Discord, it appeals to my boomerish sensibilities. 
-
