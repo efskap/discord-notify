@@ -29,7 +29,6 @@ func isRipcordFocused() (bool, error) {
 	handle, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, dwProcessId)
 	if err != nil {
 		return false, fmt.Errorf("error opening proc: %w", err)
-		return false
 	}
 	defer windows.Close(handle)
 
@@ -48,5 +47,5 @@ func isRipcordFocused() (bool, error) {
 	procPath := windows.UTF16ToString(buf)
 	procName := filepath.Base(procPath)
 
-	return procName == "Ripcord.exe"
+	return procName == "Ripcord.exe", nil
 }

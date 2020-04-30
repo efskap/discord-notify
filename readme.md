@@ -29,4 +29,8 @@ Usage of discord-notify:
         Discord token
 ```
 
+You can pass in the token with `-t`, or for convenience put it in a file called `discord.token` in `$XDG_CONFIG_HOME` or one of `XDG_CONFIG_DIRS`. 
+
+e.g. On Linux it can go in `~/.config/discord.token` or `/etc/xdg/discord.token`, and on Windows it should be `%UserProfile%\Local Settings\Application Data\discord.token`
+
 I've included the sound I use in this repo (needs to be downloaded separately from `go install`), and although it is not native to Discord, it appeals to my boomerish sensibilities. 
