@@ -24,7 +24,7 @@ func main() {
 
 
 	flag.StringVar(&token, "t", "", "Discord token")
-	flag.StringVar(&soundPath, "sound", "none", `Sound to play on notifications`)
+	flag.StringVar(&soundPath, "sound", "none", `MP3 to play on notifications`)
 	flag.Parse()
 
 	if token == "" {

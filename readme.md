@@ -24,7 +24,7 @@ $ go install github.com/efskap/discord-notify
 $ discord-notify -h
 Usage of discord-notify:
   -sound string
-        Sound to play on notifications (default "none")
+        MP3 to play on notifications (default "none")
   -t string
         Discord token
 ```
