@@ -146,6 +146,7 @@ func mentions(s *discordgo.Session, m *discordgo.Message) (me, role, everyone bo
 
 	if guildMember, err := s.GuildMember(m.GuildID, myUser.ID); err != nil {
 		// message didn't come from a guild
+		role = false
 	} else {
 		for _, mentionedRole := range m.MentionRoles {
 			for _, guildRole := range guildMember.Roles {
@@ -187,7 +188,7 @@ func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body
 			locationText = channel.Name
 		}
 	}
-	title = fmt.Sprintf("%s ➔ %s", authorName, locationText)
+	title = fmt.Sprintf("%s | %s", authorName, locationText)
 
 	var err error
 	body, err = m.ContentWithMoreMentionsReplaced(s)
@@ -195,8 +196,9 @@ func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body
 		body = m.ContentWithMentionsReplaced()
 	}
 
-	for _, attachment := range m.Attachments {
-		body = fmt.Sprintf("[%s] %s", attachment.Filename, body)
+	// iterate in reverse order since we're adding a prefix each iteration
+	for i := len(m.Attachments) - 1; i >= 0; i-- {
+		body = fmt.Sprintf("[%s]\n%s", m.Attachments[i].Filename, body)
 	}
 	return
 }
