@@ -22,7 +22,6 @@ func main() {
 	var soundPath string
 	var err error
 
-
 	flag.StringVar(&token, "t", "", "Discord token")
 	flag.StringVar(&soundPath, "sound", "none", `MP3 to play on notifications`)
 	flag.Parse()
@@ -43,8 +42,8 @@ func main() {
 	if soundPath == "" || strings.ToLower(soundPath) != "none" {
 		err = setSound(soundPath)
 		if err != nil {
-			log.Println("there will be no sound")
 			log.Println(err)
+			log.Println("notifications will be silent!")
 			log.Println("you can explicitly disable the notification sound via `-sound none`")
 		}
 	}
@@ -167,6 +166,15 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	playSound()
 
+	title, body := formatNotification(s, m.Message)
+
+	if err := beeep.Notify(title, body, getAvatarFor(m.Author)); err != nil {
+		fmt.Println("error posting notification:", err)
+	}
+
+}
+
+func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body string) {
 	authorName := m.Author.String()
 	if guildMember, err := s.GuildMember(m.GuildID, m.Author.ID); err == nil {
 		authorName = guildMember.Nick
@@ -179,24 +187,28 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			locationText = channel.Name
 		}
 	}
-	title := fmt.Sprintf("%s ➔ %s", authorName, locationText)
+	title = fmt.Sprintf("%s ➔ %s", authorName, locationText)
 
-	if err := beeep.Notify(title, m.Content, getAvatarFor(m.Author)); err != nil {
-		fmt.Println("error posting notification:", err)
+	var err error
+	body, err = m.ContentWithMoreMentionsReplaced(s)
+	if err != nil {
+		body = m.ContentWithMentionsReplaced()
 	}
 
+	for _, attachment := range m.Attachments {
+		body = fmt.Sprintf("[%s] %s", attachment.Filename, body)
+	}
+	return
 }
 
-func onReady(s *discordgo.Session, r *discordgo.Ready) {
+func onReady(_ *discordgo.Session, r *discordgo.Ready) {
 	for _, u := range r.UserGuildSettings {
 		userGuildSettings[u.GuildID] = *u
 	}
 }
 
-func onGuildSettingsUpdate(s *discordgo.Session, u *discordgo.UserGuildSettingsUpdate) {
+func onGuildSettingsUpdate(_ *discordgo.Session, u *discordgo.UserGuildSettingsUpdate) {
 	userGuildSettings[u.GuildID] = *u.UserGuildSettings
-	//fmt.Println("notification settings update")
-	//fmt.Printf("%+v\n", *u.UserGuildSettings)
 }
 
 type notifyOption int
