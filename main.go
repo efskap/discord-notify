@@ -177,7 +177,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body string) {
 	authorName := m.Author.String()
-	if guildMember, err := s.GuildMember(m.GuildID, m.Author.ID); err == nil {
+	if guildMember, err := s.GuildMember(m.GuildID, m.Author.ID); err == nil && guildMember.Nick != "" {
 		authorName = guildMember.Nick
 	}
 	locationText := "you"
