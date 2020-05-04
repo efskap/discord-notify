@@ -73,6 +73,10 @@ func main() {
 	_ = dg.Close()
 }
 
+func isMe(s *discordgo.Session, u *discordgo.User) bool {
+	return u.String() == s.State.User.String()
+}
+
 func shouldShowNotification(s *discordgo.Session, m *discordgo.Message) bool {
 
 	mentionsMe, mentionsRole, mentionsEveryone := mentions(s, m)
@@ -91,7 +95,7 @@ func shouldShowNotification(s *discordgo.Session, m *discordgo.Message) bool {
 	}
 
 	// print debug stuff
-	if strings.HasPrefix(m.Content, "!testnotify") {
+	if strings.HasPrefix(m.Content, "!test") && isMe(s, m.Author) {
 		fmt.Println("----")
 		fmt.Println("muted:\t", muted)
 		fmt.Println("notificationSetting:\t", notificationSetting)
@@ -136,15 +140,15 @@ func shouldShowNotification(s *discordgo.Session, m *discordgo.Message) bool {
 	return false
 }
 func mentions(s *discordgo.Session, m *discordgo.Message) (me, role, everyone bool) {
-	myUser := s.State.User
+
 	for _, mentionedUser := range m.Mentions {
-		if myUser == mentionedUser {
+		if isMe(s, mentionedUser) {
 			me = true
 			break
 		}
 	}
 
-	if guildMember, err := s.GuildMember(m.GuildID, myUser.ID); err != nil {
+	if guildMember, err := s.GuildMember(m.GuildID, s.State.User.ID); err != nil {
 		// message didn't come from a guild
 		role = false
 	} else {
