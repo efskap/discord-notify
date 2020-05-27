@@ -1,4 +1,6 @@
 # discord-notify
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fefskap%2Fdiscord-notify.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fefskap%2Fdiscord-notify?ref=badge_shield)
+
 
 ### Shows your Discord notifications, because Ripcord kinda doesn't.
 
@@ -34,3 +36,7 @@ You can pass in the token with `-t`, or for convenience put it in a file called 
 e.g. On Linux it can go in `~/.config/discord.token` or `/etc/xdg/discord.token`, and on Windows it should be `%UserProfile%\Local Settings\Application Data\discord.token`
 
 I've included the sound I use in this repo (needs to be downloaded separately from `go install`), and although it is not native to Discord, it appeals to my boomerish sensibilities. 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fefskap%2Fdiscord-notify.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fefskap%2Fdiscord-notify?ref=badge_large)
