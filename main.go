@@ -1,16 +1,19 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/gen2brain/beeep"
 	"github.com/kyoh86/xdg"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var userGuildSettings = make(map[string]discordgo.UserGuildSettings)
@@ -47,7 +50,6 @@ func main() {
 			log.Println("you can explicitly disable the notification sound via `-sound none`")
 		}
 	}
-
 	dg, err := discordgo.New(token)
 	if err != nil {
 		log.Fatal("Error creating Discord session: ", err)
@@ -57,9 +59,20 @@ func main() {
 	dg.AddHandler(onReady)
 	dg.AddHandler(onGuildSettingsUpdate)
 
-	err = dg.Open()
-	if err != nil {
-		log.Fatal("Error opening Discord session: ", err)
+	for {
+		err = dg.Open()
+		if err != nil {
+			var netErr net.Error
+			if errors.As(err, &netErr) {
+				log.Println("Error connecting:", netErr, "(retrying in a bit)")
+				time.Sleep(5 * time.Second)
+				continue
+			} else {
+				log.Fatal("Error opening Discord session: ", err)
+			}
+		} else {
+			break
+		}
 	}
 
 	fmt.Println(appName + " is now running.  Press CTRL-C to exit.")

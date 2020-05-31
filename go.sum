@@ -2,8 +2,6 @@ github.com/BurntSushi/xgb v0.0.0-20200324125942-20f126ea2843 h1:3iF31c7rp7nGZVDv
 github.com/BurntSushi/xgb v0.0.0-20200324125942-20f126ea2843/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/efskap/discordgo v0.20.3 h1:PIsAataukkIrmt3ukJwmMI4UaJ5ijecaREUB0fjrnRM=
 github.com/efskap/discordgo v0.20.3/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
-github.com/efskap/discordgo v0.20.4-0.20200429172633-0f91b761bcb2 h1:XLuU6b6NC9ncENYJ94gQprchjMCeG+chjIwric5IR8w=
-github.com/efskap/discordgo v0.20.4-0.20200429172633-0f91b761bcb2/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
 github.com/faiface/beep v1.0.2 h1:UB5DiRNmA4erfUYnHbgU4UB6DlBOrsdEFRtcc8sCkdQ=
 github.com/faiface/beep v1.0.2/go.mod h1:1yLb5yRdHMsovYYWVqYLioXkVuziCSITW1oarTeduQM=
 github.com/gdamore/encoding v1.0.0/go.mod h1:alR0ol34c49FCSBLjhosxzcPHQbf2trDkoo5dl+VrEg=

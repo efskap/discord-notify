@@ -11,4 +11,4 @@ require (
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4
 )
 
-replace github.com/bwmarrin/discordgo => github.com/efskap/discordgo v0.20.4-0.20200429172633-0f91b761bcb2
+replace github.com/bwmarrin/discordgo => github.com/efskap/discordgo v0.20.3
