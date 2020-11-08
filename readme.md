@@ -15,12 +15,19 @@ Targets Linux, but should work on Windows (only tested in Wine).
 
 However, its notifications support is rather lacklustre, displaying them only for DMs, without a sound, and in plain text. Heck, until recently it didn't even tell you the name of the sender. Unfortunately it's closed source shareware, so I can't go in and tweak it to my liking.
 
-
-
----
+### Install
 
 ```sh
-$ go install github.com/efskap/discord-notify
+git clone https://github.com/efskap/discord-notify
+cd discord-notify
+go install
+```
+
+(`go install` on its own won't work because I'm using `replace` in `go.mod`)
+
+### Usage
+
+```sh
 $ discord-notify -h
 Usage of discord-notify:
   -sound string
