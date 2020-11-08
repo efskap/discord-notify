@@ -23,7 +23,7 @@ jobs:
 
     - name: Get dependencies
       run: |
-        apt install libasound2-dev 
+        sudo apt install libasound2-dev 
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
