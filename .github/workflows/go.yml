@@ -30,8 +30,19 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
-      run: go build -v .
+    - name: Build Linux
+      run: go build -v -ldflags "-s -w" .
+    - name: Build Windows
+      run: GOOS="windows" go build -v -ldflags "-s -w" . 
+    - name: Update release
+      uses: johnwbyrd/update-release@v1.0.0
+      with:
+        release: latest
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: | 
+          discord-notify
+          discord-notify.exe
+          sound.mp3
 
     - name: Test
       run: go test -v .
