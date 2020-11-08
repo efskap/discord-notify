@@ -29,7 +29,8 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-
+    - name: Test
+      run: go test -v .
     - name: Build Linux
       run: go build -v -ldflags "-s -w" .
     - name: Build Windows
@@ -44,5 +45,3 @@ jobs:
           discord-notify.exe
           sound.mp3
 
-    - name: Test
-      run: go test -v .
