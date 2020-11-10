@@ -17,13 +17,19 @@ However, its notifications support is rather lacklustre, displaying them only fo
 
 ### Install
 
+## Pre-built binary
+
+Binaries for Windows and GNU/Linux (x86-64) are automatically built and uploaded to: https://github.com/efskap/discord-notify/releases
+
+## From source
+
 ```sh
 git clone https://github.com/efskap/discord-notify
 cd discord-notify
 go install
 ```
 
-(`go install` on its own won't work because I'm using `replace` in `go.mod`)
+(simply doing `go install https://github.com/efskap/discord-notify` as normal won't work because I'm using `replace` in `go.mod` for now... sorry)
 
 ### Usage
 
@@ -40,4 +46,4 @@ You can pass in the token with `-t`, or for convenience put it in a file called 
 
 e.g. On Linux it can go in `~/.config/discord.token` or `/etc/xdg/discord.token`, and on Windows it should be `%UserProfile%\Local Settings\Application Data\discord.token`
 
-I've included the sound I use in this repo (needs to be downloaded separately from `go install`), and although it is not native to Discord, it appeals to my boomerish sensibilities. 
+I've included the sound I use in the repo (and generated releases), and although it is not native to Discord, it appeals to my boomer mindset. 
