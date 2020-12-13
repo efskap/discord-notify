@@ -37,9 +37,17 @@ jobs:
       run: go build -v -ldflags "-s -w" .
     - name: Build Windows
       run: GOOS="windows" go build -v -ldflags "-s -w -H=windowsgui" .
+    - name: Run latest-tag
+      uses: EndBug/latest-tag@latest
+      with:
+        description: Latest release
+        tag-name: latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Leave this line unchanged
     - name: Update release
       uses: johnwbyrd/update-release@v1.0.0
       with:
+        tag: latest
         release: latest
         token: ${{ secrets.GITHUB_TOKEN }}
         files: | 
