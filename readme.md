@@ -6,12 +6,13 @@
 
 Companion app for [Ripcord](https://cancel.fm/ripcord/) to supplant its notification system.
 
-Targets Linux, but should work on Windows (only tested in Wine).
+Targets Linux, but should work on Windows (only tested in Wine, albeit with some systray issues).
 
 * Uses regular Discord notification settings.
 * Displays notifications (w/ avatar) through your OS.
 * But not when Ripcord is focused.
-* Can play a sound.
+* Plays a sound (comes with Discord and Skype sounds)
+* Shows an icon in the system tray
 
 [Ripcord](https://cancel.fm/ripcord/) is an amazing alternative Discord client, largely because native programs tend to be snappier. 
 
@@ -58,3 +59,4 @@ You can pass in the token with `-t`, or for convenience put it in a file called 
 e.g. On Linux it can go in `~/.config/discord.token` or `/etc/xdg/discord.token`, and on Windows it should be `%UserProfile%\Local Settings\Application Data\discord.token`
 
 Built-in notification sounds can be selected through the system tray as well, but the chosen one is not saved as there's no mutable config yet. Custom sounds have to be passed on the command line because I haven't integrated a filepicker yet.
+

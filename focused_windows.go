@@ -40,7 +40,7 @@ func isRipcordFocused() (bool, error) {
 		uintptr(len(buf)))
 
 	if lenCopied == 0 {
-		return false,  fmt.Errorf("error getting proc filename: %w", err)
+		return false, fmt.Errorf("error getting proc filename: %w", err)
 	}
 
 	// we use the `W` variant of the function, so it's UTF16 encoded

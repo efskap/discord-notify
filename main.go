@@ -23,9 +23,8 @@ import (
 var userGuildSettings = make(map[string]discordgo.UserGuildSettings)
 
 var appName = "discord-notify"
-var assetPath = binclude.Include("./assets") // include ./assets with all files and subdirectories
+var assetPath = binclude.Include("assets") // include ./assets with all files and subdirectories
 var updateState func(string) = func(s string) { fmt.Println(s) }
-var defaultSound = builtInSounds()[0]
 
 func main() {
 	var token string
@@ -35,7 +34,7 @@ func main() {
 
 	flag.StringVar(&token, "t", "", "Discord token")
 	flag.BoolVar(&useSystray, "systray", true, "Show an icon in the system tray")
-	flag.StringVar(&soundPath, "sound", defaultSound, `MP3 to play on notifications`)
+	flag.StringVar(&soundPath, "sound", builtInSounds()[0], `MP3 to play on notifications`)
 	listSounds := flag.Bool("list-sounds", false, "List available built-in sounds.")
 	flag.Parse()
 	if listSounds != nil && *listSounds {
@@ -59,7 +58,10 @@ func main() {
 	}
 
 	if soundPath == "" || strings.ToLower(soundPath) != "none" {
-		if !strings.ContainsAny(soundPath, "./") && setSoundBuiltin(soundPath) == nil {
+
+		if !strings.ContainsAny(soundPath, "./") {
+			err = setSoundBuiltin(soundPath)
+
 			fmt.Println("using built-in sound:", soundPath)
 		} else {
 			err = setSoundFromDisk(soundPath)
@@ -86,7 +88,6 @@ func main() {
 		updateState = func(s string) {
 			statusMenuItem.SetTitle(s)
 		}
-		systray.AddSeparator()
 	}
 	for {
 		err = dg.Open()

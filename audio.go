@@ -7,7 +7,6 @@ import (
 	"github.com/faiface/beep/speaker"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -33,7 +32,7 @@ func setSoundBuiltin(name string) error {
 		setSoundNone()
 		return nil
 	}
-	f, err := BinFS.Open(filepath.Join("assets", "sounds", name+".mp3"))
+	f, err := BinFS.Open("assets/sounds/" + name + ".mp3")
 	if err != nil {
 		return err
 	}
@@ -41,13 +40,9 @@ func setSoundBuiltin(name string) error {
 }
 
 func builtInSounds() (results []string) {
-	files, err := BinFS.ReadDir("assets/sounds")
-	if err != nil {
-		panic(err)
-	}
-	for _, file := range files {
-		if strings.HasSuffix(file.Name(), ".mp3") {
-			results = append(results, strings.TrimSuffix(file.Name(), ".mp3"))
+	for _, file := range BinFS.Files {
+		if strings.HasSuffix(file.Filename, ".mp3") {
+			results = append(results, strings.TrimSuffix(file.Filename, ".mp3"))
 		}
 	}
 	return results
