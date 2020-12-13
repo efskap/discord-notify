@@ -135,14 +135,14 @@ func onSystrayReady() {
 	}
 	var soundMenus []entry
 	mSound := systray.AddMenuItem("Sound", "Temporarily change the sound")
-	noneSound := mSound.AddSubMenuItemCheckbox("<none>", "No notification sound", buffer == nil)
+	noneSound := mSound.AddSubMenuItemCheckbox("<none>", "No notification sound", currentSound.buffer == nil)
 	soundMenus = append(soundMenus, entry{
 		menu:      noneSound,
 		soundName: "",
 	})
 
 	for _, name := range builtInSounds() {
-		checked := name == soundName
+		checked := name == currentSound.name
 		item := mSound.AddSubMenuItemCheckbox(name, "Built-in sound", checked)
 		soundMenus = append(soundMenus, entry{
 			menu:      item,

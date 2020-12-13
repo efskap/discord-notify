@@ -12,8 +12,13 @@ import (
 	"time"
 )
 
-var buffer *beep.Buffer
-var soundName string
+type NotifySound struct {
+	buffer *beep.Buffer
+	name   string
+	format beep.Format
+}
+
+var currentSound NotifySound
 
 func setSoundFromDisk(path string) error {
 	f, err := os.Open(path)
@@ -21,11 +26,7 @@ func setSoundFromDisk(path string) error {
 		return fmt.Errorf("error loading sound: %w", err)
 	}
 	defer f.Close()
-	soundName = path
-	return setSound(f)
-}
-func setSoundNone() {
-	buffer = nil
+	return setSound(f, path)
 }
 func setSoundBuiltin(name string) error {
 	if name == "" || name == "none" {
@@ -36,8 +37,7 @@ func setSoundBuiltin(name string) error {
 	if err != nil {
 		return err
 	}
-	soundName = name
-	return setSound(f)
+	return setSound(f, name)
 }
 
 func builtInSounds() (results []string) {
@@ -53,25 +53,27 @@ func builtInSounds() (results []string) {
 	return results
 }
 
-func setSound(data io.ReadCloser) error {
+func setSoundNone() {
+	currentSound = NotifySound{name: "none"}
+}
+func setSound(data io.ReadCloser, name string) error {
 	streamer, format, err := mp3.Decode(data)
+	currentSound = NotifySound{name: name, format: format, buffer: beep.NewBuffer(format)}
 	if err != nil {
 		return fmt.Errorf("error decoding sound: %w", err)
 	}
-
-	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	if err != nil {
-		return err
-	}
-
-	buffer = beep.NewBuffer(format)
-	buffer.Append(streamer)
+	currentSound.buffer.Append(streamer)
 	return streamer.Close()
 }
 
 func playSound() {
-	if buffer != nil {
-		sound := buffer.Streamer(0, buffer.Len())
+	if currentSound.buffer != nil {
+		err := speaker.Init(currentSound.format.SampleRate, currentSound.format.SampleRate.N(time.Second/10))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "failed to init speaker for sound: ", err)
+			return
+		}
+		sound := currentSound.buffer.Streamer(0, currentSound.buffer.Len())
 		speaker.Play(sound)
 	}
 }

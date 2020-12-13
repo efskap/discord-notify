@@ -26,11 +26,11 @@ func Test_setSoundNone(t *testing.T) {
 	if err := setSoundBuiltin(builtInSounds()[0]); err != nil {
 		t.Fatal(err)
 	}
-	if buffer == nil {
+	if currentSound.buffer == nil {
 		t.Fatal("buffer already nil")
 	}
 	setSoundNone()
-	if buffer != nil {
+	if currentSound.buffer != nil {
 		t.Fatal("buffer not nil after setSoundNull")
 	}
 
