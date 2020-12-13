@@ -1,4 +1,4 @@
-# discord-notify
+# ![](assets/icon.ico) discord-notify
 
 ### Shows your Discord notifications, because Ripcord kinda doesn't.
 
@@ -28,7 +28,7 @@ Binaries for Windows and GNU/Linux (x86-64) are automatically built and uploaded
 ```sh
 git clone https://github.com/efskap/discord-notify
 cd discord-notify
-go install
+go generate && go install
 ```
 
 (simply doing `go install https://github.com/efskap/discord-notify` as normal won't work because I'm using `replace` in `go.mod` for now... sorry)
@@ -38,11 +38,17 @@ go install
 ```sh
 $ discord-notify -h
 Usage of discord-notify:
+  -list-sounds
+        List available built-in sounds.
   -sound string
-        MP3 to play on notifications (default "none")
+        MP3 to play on notifications (default "disc")
+  -systray
+        Show an icon in the system tray (default true)
   -t string
         Discord token
-$ discord-notify -t your.tok.en -sound /path/to/sound.mp3
+
+$ discord-notify -sound skaip -t your.token.abc
+$ discord-notify -sound none -t your.token.abc -systray=false # muted with no system tray
 ```
 
 There's no installer so just create a startup script that executes `discord-notify` with the token and sound you want. 
@@ -51,6 +57,4 @@ You can pass in the token with `-t`, or for convenience put it in a file called 
 
 e.g. On Linux it can go in `~/.config/discord.token` or `/etc/xdg/discord.token`, and on Windows it should be `%UserProfile%\Local Settings\Application Data\discord.token`
 
-I've included the sound I use in the repo (and generated releases), and although it is not native to Discord, it appeals to my boomer mindset. 
-
-**You can download the normal Discord notification sound from here**: https://discord.com/assets/dd920c06a01e5bb8b09678581e29d56f.mp3
+Built-in notification sounds can be selected through the system tray as well, but the chosen one is not saved as there's no mutable config yet. Custom sounds have to be passed on the command line because I haven't integrated a filepicker yet.

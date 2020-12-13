@@ -1,12 +1,16 @@
 package main
 
+//go:generate binclude
+
 import (
 	"errors"
 	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/gen2brain/beeep"
+	"github.com/getlantern/systray"
 	"github.com/kyoh86/xdg"
+	"github.com/lu4p/binclude"
 	"log"
 	"net"
 	"os"
@@ -19,15 +23,27 @@ import (
 var userGuildSettings = make(map[string]discordgo.UserGuildSettings)
 
 var appName = "discord-notify"
+var assetPath = binclude.Include("./assets") // include ./assets with all files and subdirectories
+var updateState func(string) = func(s string) { fmt.Println(s) }
+var defaultSound = builtInSounds()[0]
 
 func main() {
 	var token string
+	var useSystray bool
 	var soundPath string
 	var err error
 
 	flag.StringVar(&token, "t", "", "Discord token")
-	flag.StringVar(&soundPath, "sound", "none", `MP3 to play on notifications`)
+	flag.BoolVar(&useSystray, "systray", true, "Show an icon in the system tray")
+	flag.StringVar(&soundPath, "sound", defaultSound, `MP3 to play on notifications`)
+	listSounds := flag.Bool("list-sounds", false, "List available built-in sounds.")
 	flag.Parse()
+	if listSounds != nil && *listSounds {
+		for _, name := range builtInSounds() {
+			fmt.Println(name)
+		}
+		os.Exit(0)
+	}
 
 	if token == "" {
 		token, err = readTokenFromFile()
@@ -43,7 +59,11 @@ func main() {
 	}
 
 	if soundPath == "" || strings.ToLower(soundPath) != "none" {
-		err = setSound(soundPath)
+		if !strings.ContainsAny(soundPath, "./") && setSoundBuiltin(soundPath) == nil {
+			fmt.Println("using built-in sound:", soundPath)
+		} else {
+			err = setSoundFromDisk(soundPath)
+		}
 		if err != nil {
 			log.Println(err)
 			log.Println("notifications will be silent!")
@@ -59,6 +79,15 @@ func main() {
 	dg.AddHandler(onReady)
 	dg.AddHandler(onGuildSettingsUpdate)
 
+	if useSystray {
+		systray.AddMenuItem(appName, "").Disable()
+		statusMenuItem := systray.AddMenuItem("Logging in...", "")
+		statusMenuItem.Disable()
+		updateState = func(s string) {
+			statusMenuItem.SetTitle(s)
+		}
+		systray.AddSeparator()
+	}
 	for {
 		err = dg.Open()
 		if err != nil {
@@ -75,16 +104,84 @@ func main() {
 		}
 	}
 
-	fmt.Println(appName + " is now running.  Press CTRL-C to exit.")
-
-	// wait until we get a signal to exit
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
-
-	log.Println("Closing Discord session")
-	_ = dg.Close()
+	ctrlC := make(chan os.Signal, 1)
+	signal.Notify(ctrlC, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	if useSystray {
+		fmt.Println(appName + " is now running. Press CTRL-C or use the system tray menu to exit.")
+		go func() {
+			<-ctrlC
+			systray.Quit()
+		}()
+		systray.Run(onSystrayReady, onSystrayExit)
+	} else {
+		fmt.Println(appName + " is now running. Press CTRL-C to exit.")
+		<-ctrlC
+	}
+	close(ctrlC)
+	fmt.Println("Closing Discord session")
+	if err = dg.Close(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error closing session:", err)
+	}
 }
+
+func onSystrayReady() {
+	systray.SetTitle(appName)
+	if err := trySetIcon(); err != nil {
+		log.Println("unable to set systray icon:", err)
+	}
+	type entry struct {
+		menu      *systray.MenuItem
+		soundName string
+	}
+	var soundMenus []entry
+	mSound := systray.AddMenuItem("Sound", "Temporarily change the sound")
+	noneSound := mSound.AddSubMenuItemCheckbox("<none>", "No notification sound", buffer == nil)
+	soundMenus = append(soundMenus, entry{
+		menu:      noneSound,
+		soundName: "",
+	})
+
+	for _, name := range builtInSounds() {
+		checked := name == soundName
+		item := mSound.AddSubMenuItemCheckbox(name, "Built-in sound", checked)
+		soundMenus = append(soundMenus, entry{
+			menu:      item,
+			soundName: name,
+		})
+	}
+
+	for _, m_ := range soundMenus {
+		currentMenu := m_
+		go func() {
+			for {
+				<-currentMenu.menu.ClickedCh
+				for _, m := range soundMenus {
+					if currentMenu.menu != m.menu {
+						m.menu.Uncheck()
+					}
+				}
+				currentMenu.menu.Check()
+				setSoundBuiltin(currentMenu.soundName)
+			}
+		}()
+	}
+
+	mQuit := systray.AddMenuItem("Quit", "Quit the app.")
+	go func() {
+		<-mQuit.ClickedCh
+		systray.Quit()
+	}()
+}
+func trySetIcon() error {
+	f, err := BinFS.ReadFile("assets/icon.ico")
+	if err != nil {
+		return err
+	}
+	systray.SetIcon(f)
+	return nil
+}
+
+func onSystrayExit() {}
 
 func isMe(s *discordgo.Session, u *discordgo.User) bool {
 	return u.String() == s.State.User.String()
@@ -221,6 +318,7 @@ func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body
 }
 
 func onReady(_ *discordgo.Session, r *discordgo.Ready) {
+	updateState("Logged in as " + r.User.String())
 	for _, u := range r.UserGuildSettings {
 		userGuildSettings[u.GuildID] = *u
 	}

@@ -23,18 +23,20 @@ jobs:
 
     - name: Get dependencies
       run: |
-        sudo apt install libasound2-dev 
+        sudo apt install libasound2-dev libgtk-3-dev libappindicator3-dev
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+        GO111MODULE=on go get -u github.com/lu4p/binclude/cmd/binclude
+        go generate .
     - name: Test
       run: go test -v .
     - name: Build Linux
       run: go build -v -ldflags "-s -w" .
     - name: Build Windows
-      run: GOOS="windows" go build -v -ldflags "-s -w" . 
+      run: GOOS="windows" go build -v -ldflags "-s -w -H=windowgui" .
     - name: Update release
       uses: johnwbyrd/update-release@v1.0.0
       with:
@@ -43,5 +45,3 @@ jobs:
         files: | 
           discord-notify
           discord-notify.exe
-          sound.mp3
-
