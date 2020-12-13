@@ -3,7 +3,8 @@
 ### Shows your Discord notifications, because Ripcord kinda doesn't.
 
 ![Go](https://github.com/efskap/discord-notify/workflows/Go/badge.svg)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/efskap/discord-notify)
+
+
 
 Companion app for [Ripcord](https://cancel.fm/ripcord/) to supplant its notification system.
 
@@ -21,9 +22,10 @@ However, its notifications support is rather lacklustre, displaying them only fo
 
 ## Install
 
-### Pre-built binary
+### Latest pre-built binary
 
-Binaries for Windows and GNU/Linux (x86-64) are automatically built and uploaded to: https://github.com/efskap/discord-notify/releases
+####[Linux](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify)
+####[Windows](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify.exe)
 
 ### From source
 
