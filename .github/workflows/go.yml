@@ -36,7 +36,7 @@ jobs:
     - name: Build Linux
       run: go build -v -ldflags "-s -w" .
     - name: Build Windows
-      run: GOOS="windows" go build -v -ldflags "-s -w -H=windowgui" .
+      run: GOOS="windows" go build -v -ldflags "-s -w -H=windowsgui" .
     - name: Update release
       uses: johnwbyrd/update-release@v1.0.0
       with:
