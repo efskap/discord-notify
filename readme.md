@@ -3,6 +3,7 @@
 ### Shows your Discord notifications, because Ripcord kinda doesn't.
 
 ![Go](https://github.com/efskap/discord-notify/workflows/Go/badge.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/efskap/discord-notify)
 
 Companion app for [Ripcord](https://cancel.fm/ripcord/) to supplant its notification system.
 
