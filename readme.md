@@ -24,8 +24,8 @@ However, its notifications support is rather lacklustre, displaying them only fo
 
 ### Latest pre-built binary
 
-####[Linux](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify)
-####[Windows](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify.exe)
+#### [Linux](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify)
+#### [Windows](https://github.com/efskap/discord-notify/releases/download/latest/discord-notify.exe)
 
 ### From source
 
