@@ -29,7 +29,6 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-        GO111MODULE=on go get -u github.com/lu4p/binclude/cmd/binclude
         go generate .
     - name: Test
       run: go test -v .
