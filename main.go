@@ -1,6 +1,7 @@
-package main
+// +build !gen
 
-//go:generate binclude
+//go:generate go run -tags=gen .
+package main
 
 import (
 	"errors"
@@ -22,15 +23,22 @@ import (
 
 var userGuildSettings = make(map[string]discordgo.UserGuildSettings)
 
-var appName = "discord-notify"
+const appName = "discord-notify"
+const appHomepage = "https://github.com/efskap/discord-notify"
+
 var assetPath = binclude.Include("assets") // include ./assets with all files and subdirectories
-var updateState func(string) = func(s string) { fmt.Println(s) }
+var updateState = func(s ...string) { fmt.Println(strings.Join(s, " ")) }
+
+var exitSignal = make(chan bool, 1)
 
 func main() {
 	var token string
 	var useSystray bool
 	var soundPath string
 	var err error
+
+	ctrlC := make(chan os.Signal, 1)
+	signal.Notify(ctrlC, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 
 	flag.StringVar(&token, "t", "", "Discord token")
 	flag.BoolVar(&useSystray, "systray", true, "Show an icon in the system tray")
@@ -80,56 +88,76 @@ func main() {
 	dg.AddHandler(onMessageCreate)
 	dg.AddHandler(onReady)
 	dg.AddHandler(onGuildSettingsUpdate)
+	dg.AddHandler(onDisconnect)
+
+	defer func() {
+		fmt.Println("Closing Discord session")
+		if err = dg.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, "Error closing session:", err)
+		}
+	}()
 
 	if useSystray {
-		systray.AddMenuItem(appName, "").Disable()
+
 		statusMenuItem := systray.AddMenuItem("Logging in...", "")
 		statusMenuItem.Disable()
-		updateState = func(s string) {
-			statusMenuItem.SetTitle(s)
+		systray.AddSeparator()
+		oldUpdateState := updateState
+		updateState = func(s ...string) {
+			oldUpdateState(s...)
+			statusMenuItem.SetTitle(strings.Join(s, " "))
 		}
+
+		defer systray.Quit()
+		go systray.Run(onSystrayReady, onSystrayExit)
 	}
 	for {
 		err = dg.Open()
 		if err != nil {
+			setStatusIcon(true)
 			var netErr net.Error
 			if errors.As(err, &netErr) {
-				log.Println("Error connecting:", netErr, "(retrying in a bit)")
+				updateState(fmt.Sprintln("Error connecting:", netErr, "(retrying in a bit)"))
 				time.Sleep(5 * time.Second)
 				continue
 			} else {
-				log.Fatal("Error opening Discord session: ", err)
+				updateState(fmt.Errorf("error opening Discord session: %w", err).Error())
+				if useSystray {
+					break
+				} else {
+					return
+				}
 			}
 		} else {
 			break
 		}
 	}
 
-	ctrlC := make(chan os.Signal, 1)
-	signal.Notify(ctrlC, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	if useSystray {
 		fmt.Println(appName + " is now running. Press CTRL-C or use the system tray menu to exit.")
-		go func() {
-			<-ctrlC
-			systray.Quit()
-		}()
-		systray.Run(onSystrayReady, onSystrayExit)
 	} else {
 		fmt.Println(appName + " is now running. Press CTRL-C to exit.")
-		<-ctrlC
 	}
-	close(ctrlC)
-	fmt.Println("Closing Discord session")
-	if err = dg.Close(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error closing session:", err)
+	select {
+	case <-exitSignal:
+		break
+	case <-ctrlC:
+		break
 	}
 }
-
-func onSystrayReady() {
-	systray.SetTitle(appName)
-	if err := trySetIcon(); err != nil {
+func setStatusIcon(isError bool) {
+	iconPath := "assets/icon.ico"
+	if isError {
+		iconPath = "assets/icon_err.ico"
+	}
+	if err := trySetIcon(iconPath); err != nil {
 		log.Println("unable to set systray icon:", err)
 	}
+
+}
+func onSystrayReady() {
+	systray.SetTitle(appName)
+	setStatusIcon(false)
 	type entry struct {
 		menu      *systray.MenuItem
 		soundName string
@@ -154,8 +182,7 @@ func onSystrayReady() {
 	for _, m_ := range soundMenus {
 		currentMenu := m_
 		go func() {
-			for {
-				<-currentMenu.menu.ClickedCh
+			for range currentMenu.menu.ClickedCh {
 				for _, m := range soundMenus {
 					if currentMenu.menu != m.menu {
 						m.menu.Uncheck()
@@ -167,14 +194,29 @@ func onSystrayReady() {
 		}()
 	}
 
+	m := systray.AddMenuItem("Open GitHub", "Visit repo")
+	go func() {
+		for range m.ClickedCh {
+			if err := openBrowser(appHomepage); err != nil {
+				fmt.Fprintln(os.Stderr, "error opening", appHomepage, ":", err)
+			}
+		}
+	}()
 	mQuit := systray.AddMenuItem("Quit", "Quit the app.")
 	go func() {
 		<-mQuit.ClickedCh
 		systray.Quit()
 	}()
 }
-func trySetIcon() error {
-	f, err := BinFS.ReadFile("assets/icon.ico")
+
+var curIcon = ""
+
+func trySetIcon(path string) error {
+	if path == curIcon {
+		return nil
+	}
+	curIcon = path
+	f, err := BinFS.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -182,7 +224,9 @@ func trySetIcon() error {
 	return nil
 }
 
-func onSystrayExit() {}
+func onSystrayExit() {
+	exitSignal <- true
+}
 
 func isMe(s *discordgo.Session, u *discordgo.User) bool {
 	return u.String() == s.State.User.String()
@@ -277,6 +321,7 @@ func mentions(s *discordgo.Session, m *discordgo.Message) (me, role, everyone bo
 }
 
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	setStatusIcon(false)
 	if !shouldShowNotification(s, m.Message) {
 		return
 	}
@@ -319,6 +364,7 @@ func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body
 }
 
 func onReady(_ *discordgo.Session, r *discordgo.Ready) {
+	setStatusIcon(false)
 	updateState("Logged in as " + r.User.String())
 	for _, u := range r.UserGuildSettings {
 		userGuildSettings[u.GuildID] = *u
@@ -327,6 +373,11 @@ func onReady(_ *discordgo.Session, r *discordgo.Ready) {
 
 func onGuildSettingsUpdate(_ *discordgo.Session, u *discordgo.UserGuildSettingsUpdate) {
 	userGuildSettings[u.GuildID] = *u.UserGuildSettings
+}
+
+func onDisconnect(_ *discordgo.Session, d *discordgo.Disconnect) {
+	updateState("Disconnected!")
+	setStatusIcon(true)
 }
 
 type notifyOption int
