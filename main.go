@@ -337,8 +337,12 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body string) {
 	authorName := m.Author.String()
-	if guildMember, err := s.GuildMember(m.GuildID, m.Author.ID); err == nil && guildMember.Nick != "" {
-		authorName = guildMember.Nick
+	if guildMember, err := s.GuildMember(m.GuildID, m.Author.ID); err == nil {
+		if guildMember.Nick != "" {
+			authorName = guildMember.Nick
+		} else {
+			authorName = guildMember.User.Username
+		}
 	}
 	locationText := "you"
 	if channel, err := s.Channel(m.ChannelID); err == nil {
@@ -348,7 +352,7 @@ func formatNotification(s *discordgo.Session, m *discordgo.Message) (title, body
 			locationText = channel.Name
 		}
 	}
-	title = fmt.Sprintf("%s | %s", authorName, locationText)
+	title = fmt.Sprintf("%s (%s)", authorName, locationText)
 
 	var err error
 	body, err = m.ContentWithMoreMentionsReplaced(s)
